@@ -62,7 +62,12 @@ customBuild rs opts target@Target {..} = do
                     top   <- topDirectory
                     cmd [Cwd output] [path] "x" (top -/- input)
 
-            Configure dir -> cmd Shell cmdEcho [Cwd dir] [path] opts argList
+            Configure dir -> do
+                -- Inject /bin/bash into `libtool`, instead of /bin/sh, otherwise Windows breaks.
+                -- TODO: Figure out why.
+                bash <- bashPath
+                let env = AddEnv "CONFIG_SHELL" bash
+                cmd Shell cmdEcho env [Cwd dir] [path] opts argList
 
             HsCpp    -> captureStdout target path argList
             GenApply -> captureStdout target path argList

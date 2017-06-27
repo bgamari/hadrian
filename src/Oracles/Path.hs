@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Oracles.Path (
-    topDirectory, getTopDirectory, systemBuilderPath, pathOracle
+    topDirectory, getTopDirectory, systemBuilderPath, pathOracle, bashPath
     ) where
 
 import Control.Monad.Trans.Reader
@@ -55,6 +55,10 @@ systemBuilderPath builder = case builder of
             return "" -- TODO: Use a safe interface.
         else fixAbsolutePathOnWindows =<< lookupInPath path
 
+-- | Lookup the path to the @bash@ interpreter.
+bashPath :: Action FilePath
+bashPath = lookupInPath "bash" >>= fixAbsolutePathOnWindows
+
 -- | Lookup an executable in @PATH@.
 lookupInPath :: FilePath -> Action FilePath
 lookupInPath name
@@ -95,4 +99,3 @@ pathOracle = do
         path <- unifyPath <$> unpack <$> liftIO (findExecutable name)
         putLoud $ "Executable found: " ++ name ++ " => " ++ path
         return path
-
